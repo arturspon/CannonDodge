@@ -72,8 +72,15 @@ public class CannonSpawner : MonoBehaviour {
         Vector3 diff = shootPoint.transform.position - spawnPoint.position;
         diff.Normalize();
 
+        float projectileSize = Random.Range(0.2f, 0.5f);
+        Vector3 projectileScale = new Vector3(projectileSize, projectileSize, projectileSize);
+
         GameObject projectile = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity) as GameObject;
-        projectile.GetComponent<Rigidbody>().AddForce(diff * shootForce);
+        projectile.transform.localScale = projectileScale;
+
+        float projectileForce = Random.Range(700f, 900f);
+
+        projectile.GetComponent<Rigidbody>().AddForce(diff * projectileForce);
     }
 
     private IEnumerator HideCannon(GameObject cannon) {
