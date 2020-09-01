@@ -8,6 +8,7 @@ using TMPro;
 public class Player : MonoBehaviour {
     // Mobile
     public Joystick joystick;
+    private bool isAccelerometerFlat = true;
 
     public float moveSpeed = 25f;
     private Rigidbody rb;
@@ -17,7 +18,7 @@ public class Player : MonoBehaviour {
 
     // Stats
     private int score = 0;
-    private int energy = 90;
+    private int energy = 0;
 
     // HUD
     public TMP_Text scoreText;
@@ -29,6 +30,9 @@ public class Player : MonoBehaviour {
     // Powerup: SuperSpeed
     private float superSpeedVelocity = 30f;
 
+    // Misc
+    private bool isGameStarted = false;
+
     void Start() {
         rb = gameObject.GetComponent<Rigidbody>();
         gameObject.transform.localScale = startScale;
@@ -39,12 +43,14 @@ public class Player : MonoBehaviour {
     private void OnGameStart() {
         StartCoroutine("AddScore");
         StartCoroutine("IncreaseScale");
+        isGameStarted = true;
     }
 
     private void OnGameOver() {
         StopCoroutine("AddScore");
         StopCoroutine("IncreaseScale");
         gameObject.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+        isGameStarted = false;
     }
 
     void Update() {
@@ -62,8 +68,9 @@ public class Player : MonoBehaviour {
 
         // Check for game over
         if (gameObject.transform.localScale.x <= 0) {
+            energy = 0;
+            score = 0;
             GameEvents.current.EndGame();
-
         }
 
         // TODO: save maxScore in a variable
@@ -74,15 +81,35 @@ public class Player : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        float mH = joystick.Horizontal;
-        float mV = joystick.Vertical;
-        // float mH = Input.GetAxis("Horizontal");
-        // float mV = Input.GetAxis("Vertical");
 
-        Vector3 movement = new Vector3(mH, 0.0f, mV);
+        if (isGameStarted) {
+            // =================================================================
+            // Accelerometer
+            // =================================================================
+            Vector3 tilt = Input.acceleration;
+            if (isAccelerometerFlat) {
+                tilt = Quaternion.Euler(90, 0, 0) * tilt;
+            }
 
-        // rb.AddForce(movement * moveSpeed);
-        rb.velocity = new Vector3 (mH * moveSpeed, rb.velocity.y, mV * moveSpeed);
+            // Move by tilt
+            // Debug.Log(tilt.x + " / " + tilt.y + " / " + tilt.z);
+            // rb.AddForce(tilt.x * 500f * Time.deltaTime, 0, tilt.z * 500f * Time.deltaTime);
+            rb.velocity = new Vector3 (tilt.x * 700f * Time.deltaTime, 0, tilt.z * 700f * Time.deltaTime);
+
+            // =================================================================
+            // Virtual joystick
+            // =================================================================
+            float mH = joystick.Horizontal;
+            float mV = joystick.Vertical;
+
+            // float mH = Input.GetAxis("Horizontal");
+            // float mV = Input.GetAxis("Vertical");
+
+            // Move
+            Vector3 movement = new Vector3(mH, 0.0f, mV);
+            rb.velocity = new Vector3 (mH * moveSpeed, rb.velocity.y, mV * moveSpeed);
+            
+        }
     }
 
     void OnCollisionEnter(Collision collision) {

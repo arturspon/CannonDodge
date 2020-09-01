@@ -43,7 +43,7 @@ public class StateManager : MonoBehaviour {
         if (show) {
             startTextBlinkCoroutine = StartCoroutine(BlinkGameObject(startTextObj, 0.5f));
         } else {
-            StopCoroutine(startTextBlinkCoroutine);
+            StopAllCoroutines();
         }
     }
 
