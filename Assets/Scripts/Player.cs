@@ -6,7 +6,10 @@ using EZCameraShake;
 using TMPro;
 
 public class Player : MonoBehaviour {
-    public float speed = 25f;
+    // Mobile
+    public Joystick joystick;
+
+    public float moveSpeed = 25f;
     private Rigidbody rb;
 
     // In-game
@@ -14,17 +17,34 @@ public class Player : MonoBehaviour {
 
     // Stats
     private int score = 0;
-    private int energy = 0;
+    private int energy = 90;
 
     // HUD
     public TMP_Text scoreText;
     public Slider enerbyBar;
 
+    // Powerup: MassAttack
+    public GameObject energyBallProjectilePrefab;
+
+    // Powerup: SuperSpeed
+    private float superSpeedVelocity = 30f;
+
     void Start() {
         rb = gameObject.GetComponent<Rigidbody>();
         gameObject.transform.localScale = startScale;
-        StartCoroutine(AddScore());
-        StartCoroutine(IncreaseScale());
+        GameEvents.current.onGameStart += OnGameStart;
+        GameEvents.current.onGameOver += OnGameOver;
+    }
+
+    private void OnGameStart() {
+        StartCoroutine("AddScore");
+        StartCoroutine("IncreaseScale");
+    }
+
+    private void OnGameOver() {
+        StopCoroutine("AddScore");
+        StopCoroutine("IncreaseScale");
+        gameObject.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
     }
 
     void Update() {
@@ -32,16 +52,37 @@ public class Player : MonoBehaviour {
 
         scoreText.text = score.ToString();
         enerbyBar.value = energy;
+
+        // Check for energy
+        if (energy >= 100) {
+            energy = 0;
+            // StartCoroutine(MassAttack());
+            StartCoroutine(SuperSpeed());
+        }
+
+        // Check for game over
+        if (gameObject.transform.localScale.x <= 0) {
+            GameEvents.current.EndGame();
+
+        }
+
+        // TODO: save maxScore in a variable
+        float maxScore = PlayerPrefs.GetInt("maxScore");
+        if (score > maxScore) {
+            PlayerPrefs.SetInt("maxScore", score);
+        }
     }
 
     void FixedUpdate() {
-        float mH = Input.GetAxis("Horizontal");
-        float mV = Input.GetAxis("Vertical");
+        float mH = joystick.Horizontal;
+        float mV = joystick.Vertical;
+        // float mH = Input.GetAxis("Horizontal");
+        // float mV = Input.GetAxis("Vertical");
 
         Vector3 movement = new Vector3(mH, 0.0f, mV);
 
-        // rb.AddForce(movement * speed);
-        rb.velocity = new Vector3 (mH * speed, rb.velocity.y, mV * speed);
+        // rb.AddForce(movement * moveSpeed);
+        rb.velocity = new Vector3 (mH * moveSpeed, rb.velocity.y, mV * moveSpeed);
     }
 
     void OnCollisionEnter(Collision collision) {
@@ -85,5 +126,40 @@ public class Player : MonoBehaviour {
             score++;
             yield return new WaitForSeconds(timeUntilNextScore);
         }
+    }
+
+    private IEnumerator MassAttack() {
+        float xRotation = 0;
+        for (int i = 0; i < 100; i++) {
+            xRotation += 10;
+
+            Vector3 spawnPosition = gameObject.transform.position;
+            spawnPosition.y += 1;
+
+            GameObject energyBallProjectile = Instantiate(
+                energyBallProjectilePrefab,
+                spawnPosition,
+                Quaternion.identity
+            ) as GameObject;
+            Vector3 eulersToRotate = new Vector3(0f, 0f, xRotation);
+            energyBallProjectile.transform.Rotate(eulersToRotate);
+            // energyBallProjectile.transform.localRotation = Quaternion.Euler(
+
+            // );
+            Destroy(energyBallProjectile, 5f);
+
+            energyBallProjectile.GetComponent<Rigidbody>().AddForce(transform.forward * 700);
+            
+            yield return new WaitForSeconds(0.025f);
+        }
+    }
+
+    private IEnumerator SuperSpeed() {
+        float normalSpeed = moveSpeed;
+        moveSpeed = superSpeedVelocity;
+
+        yield return new WaitForSeconds(10f);
+
+        moveSpeed = normalSpeed;
     }
 }

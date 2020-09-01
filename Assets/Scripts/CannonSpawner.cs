@@ -7,17 +7,33 @@ public class CannonSpawner : MonoBehaviour {
     public GameObject[] spawnPoints;
     public GameObject shootPoint;
     public GameObject cannonPrefab;
+    public GameObject player;
 
     private float shootForce = 700f;
     private List<GameObject> cannons = new List<GameObject>();
+    bool isGameStarted = false;
     
     void Start() {
+        GameEvents.current.onGameStart += OnGameStart;
+        GameEvents.current.onGameOver += OnGameOver;
         SpawnCannons();
-        StartCoroutine(ShootRoutine());
     }
 
-    void Update() {
-        
+    private void OnGameStart() {
+        StartCoroutine("ShootRoutine");
+        isGameStarted = true;
+    }
+
+    private void OnGameOver() {
+        StopCoroutine("ShootRoutine");
+        HideCannons();
+        isGameStarted = false;
+    }
+
+    private void HideCannons() {
+        foreach (GameObject cannon in cannons) {
+            cannon.SetActive(false);
+        }
     }
 
     private void SpawnCannons() {
@@ -58,8 +74,9 @@ public class CannonSpawner : MonoBehaviour {
                 cannon.SetActive(true);
                 yield return new WaitForSeconds(Random.Range(0.2f, 1f));
 
-                GameObject spawnPoint = spawnPoints[spawnPointIndex];
-                Shoot(spawnPoint.transform);
+                // GameObject spawnPoint = spawnPoints[spawnPointIndex];
+                Transform spawnPoint = cannon.transform.Find("Holder/UpperBody/CannonHole");
+                Shoot(spawnPoint);
                 
                 StartCoroutine(HideCannon(cannon));
 
@@ -69,14 +86,18 @@ public class CannonSpawner : MonoBehaviour {
     }
 
     private void Shoot(Transform spawnPoint) {
-        Vector3 diff = shootPoint.transform.position - spawnPoint.position;
+        Vector3 diff = player.transform.position - spawnPoint.position;
         diff.Normalize();
 
         float projectileSize = Random.Range(0.2f, 0.5f);
         Vector3 projectileScale = new Vector3(projectileSize, projectileSize, projectileSize);
 
-        GameObject projectile = Instantiate(projectilePrefab, spawnPoint.position, Quaternion.identity) as GameObject;
+        // TODO: better positioning of the projectile
+        Vector3 projectilePosition = new Vector3(spawnPoint.position.x, spawnPoint.position.y, spawnPoint.position.z);
+
+        GameObject projectile = Instantiate(projectilePrefab, projectilePosition, Quaternion.identity) as GameObject;
         projectile.transform.localScale = projectileScale;
+        // projectile.transform.LookAt(player.transform.position);
 
         float projectileForce = Random.Range(700f, 900f);
 
