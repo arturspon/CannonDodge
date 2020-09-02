@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CannonSpawner : MonoBehaviour {
     public GameObject projectilePrefab;
@@ -12,6 +13,16 @@ public class CannonSpawner : MonoBehaviour {
     private float shootForce = 700f;
     private List<GameObject> cannons = new List<GameObject>();
     bool isGameStarted = false;
+
+    // Difficulty related
+    private float maxCannonAppearingTime = 0.5f;
+    private float minShootWaitTime = 1f;
+    private float maxShootWaitTime = 1f;
+    private float minProjectileSpeed = 600f;
+    private float maxProjectileSpeed = 700f;
+    
+    // HUD
+    public Slider waveSlider;
     
     void Start() {
         GameEvents.current.onGameStart += OnGameStart;
@@ -21,18 +32,46 @@ public class CannonSpawner : MonoBehaviour {
 
     private void OnGameStart() {
         StartCoroutine("ShootRoutine");
+        StartCoroutine("IncreaseDifficulty");
         isGameStarted = true;
     }
 
     private void OnGameOver() {
         StopCoroutine("ShootRoutine");
+        StopCoroutine("IncreaseDifficulty");
         HideCannons();
+        minShootWaitTime = 1f;
+        maxShootWaitTime = 1f;
+        minProjectileSpeed = 600f;
+        maxProjectileSpeed = 700f;
+        maxCannonAppearingTime = 0.5f;
         isGameStarted = false;
     }
 
     private void HideCannons() {
         foreach (GameObject cannon in cannons) {
             cannon.SetActive(false);
+        }
+    }
+
+    private IEnumerator IncreaseDifficulty() {
+        while (true) {
+            for (int i = 0; i < 10; i++) {
+                yield return new WaitForSeconds(1f);
+                waveSlider.value += 10;
+                // waveSlider.value = Mathf.MoveTowards(waveSlider.value, waveSlider.value + 30, 100 * Time.deltaTime);
+            }
+            maxProjectileSpeed += 10f;
+            minProjectileSpeed += 10f;
+            if (minShootWaitTime > 0.05f) minShootWaitTime -= 0.05f;
+            if (maxShootWaitTime > 0.05f) maxShootWaitTime -= 0.05f;
+            if (maxCannonAppearingTime > 0.05f) maxShootWaitTime -= 0.05f;
+            // Debug.Log("minShootWaitTime = " + minShootWaitTime);
+            // Debug.Log("maxShootWaitTime = " + maxShootWaitTime);
+            // Debug.Log("minProjectileSpeed = " + minProjectileSpeed);
+            // Debug.Log("maxProjectileSpeed = " + maxProjectileSpeed);
+            waveSlider.value = 0;
+            GameEvents.current.NextWave();
         }
     }
 
@@ -72,7 +111,7 @@ public class CannonSpawner : MonoBehaviour {
 
                 GameObject cannon = cannons[spawnPointIndex];
                 cannon.SetActive(true);
-                yield return new WaitForSeconds(Random.Range(0.2f, 1f));
+                yield return new WaitForSeconds(Random.Range(minShootWaitTime, maxShootWaitTime));
 
                 // GameObject spawnPoint = spawnPoints[spawnPointIndex];
                 Transform spawnPoint = cannon.transform.Find("Holder/UpperBody/CannonHole");
@@ -80,7 +119,7 @@ public class CannonSpawner : MonoBehaviour {
                 
                 StartCoroutine(HideCannon(cannon));
 
-                yield return new WaitForSeconds(Random.Range(0f, 0.5f));                
+                yield return new WaitForSeconds(Random.Range(0f, maxCannonAppearingTime));                
             }
         }
     }
@@ -99,7 +138,7 @@ public class CannonSpawner : MonoBehaviour {
         projectile.transform.localScale = projectileScale;
         // projectile.transform.LookAt(player.transform.position);
 
-        float projectileForce = Random.Range(700f, 900f);
+        float projectileForce = Random.Range(minProjectileSpeed, maxProjectileSpeed);
 
         projectile.GetComponent<Rigidbody>().AddForce(diff * projectileForce);
     }

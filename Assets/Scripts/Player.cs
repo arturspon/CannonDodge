@@ -81,7 +81,6 @@ public class Player : MonoBehaviour {
     }
 
     void FixedUpdate() {
-
         if (isGameStarted) {
             // =================================================================
             // Accelerometer
@@ -101,6 +100,19 @@ public class Player : MonoBehaviour {
             // =================================================================
             float mH = joystick.Horizontal;
             float mV = joystick.Vertical;
+
+            // Debug.Log(mH + " / " + mV);
+
+            // if (joystick.Horizontal >= .2f) {
+            //     mH = 1;
+            // } else if (joystick.Horizontal <= -.2f) {
+            //     mH = -1;
+            // }
+            // if (joystick.Vertical >= .2f) {
+            //     mV = 1;
+            // } else if (joystick.Vertical <= -.2f) {
+            //     mV = -1;
+            // }
 
             // float mH = Input.GetAxis("Horizontal");
             // float mV = Input.GetAxis("Vertical");

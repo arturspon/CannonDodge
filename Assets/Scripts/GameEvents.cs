@@ -19,4 +19,9 @@ public class GameEvents : MonoBehaviour {
     public void EndGame() {
         onGameOver.Invoke();
     }
+
+    public event Action onWaveChange;
+    public void NextWave() {
+        onWaveChange.Invoke();
+    }
 }
