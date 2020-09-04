@@ -115,8 +115,8 @@ public class Player : MonoBehaviour {
             //     mV = -1;
             // }
 
-            mH = Input.GetAxis("Horizontal");
-            mV = Input.GetAxis("Vertical");
+            // mH = Input.GetAxis("Horizontal");
+            // mV = Input.GetAxis("Vertical");
 
             // Move
             Vector3 movement = new Vector3(mH, 0.0f, mV);
