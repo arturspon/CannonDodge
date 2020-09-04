@@ -50,6 +50,7 @@ public class Player : MonoBehaviour {
         StopCoroutine("AddScore");
         StopCoroutine("IncreaseScale");
         gameObject.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+        gameObject.transform.localPosition = new Vector3(9.46f, 330.353f, -303.81f);
         isGameStarted = false;
     }
 
@@ -114,8 +115,8 @@ public class Player : MonoBehaviour {
             //     mV = -1;
             // }
 
-            // float mH = Input.GetAxis("Horizontal");
-            // float mV = Input.GetAxis("Vertical");
+            mH = Input.GetAxis("Horizontal");
+            mV = Input.GetAxis("Vertical");
 
             // Move
             Vector3 movement = new Vector3(mH, 0.0f, mV);
@@ -140,9 +141,12 @@ public class Player : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (other.gameObject.tag == "EnergyBall") {
-            energy += 10;
+        if (other.gameObject.tag == "CollectableItem") {
+            // For now, it's always a Coin here
             Destroy(other.gameObject);
+            int currentCoins = PlayerPrefs.GetInt("coins");
+            PlayerPrefs.SetInt("coins", ++currentCoins);
+            GameEvents.current.PickupCoin();
         }   
     }
 

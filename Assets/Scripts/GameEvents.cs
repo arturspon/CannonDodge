@@ -24,4 +24,9 @@ public class GameEvents : MonoBehaviour {
     public void NextWave() {
         onWaveChange.Invoke();
     }
+
+    public event Action onCoinPickup;
+    public void PickupCoin() {
+        onCoinPickup.Invoke();
+    }
 }

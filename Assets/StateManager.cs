@@ -9,6 +9,7 @@ public class StateManager : MonoBehaviour {
     public TMP_Text txtMaxScore;
     public TMP_Text txtGameOver;
     public TMP_Text txtWave;
+    public TMP_Text txtCoinCounter;
     public Slider waveBar;
     private bool isGameStarted = false;
     private Coroutine startTextBlinkCoroutine;
@@ -18,6 +19,8 @@ public class StateManager : MonoBehaviour {
         ToggleMenu(true);
         GameEvents.current.onGameOver += OnGameOver;
         GameEvents.current.onWaveChange += OnWaveChange;
+        GameEvents.current.onCoinPickup += OnCoinPickup;
+        OnCoinPickup();
     }
 
     void Update() {
@@ -83,5 +86,9 @@ public class StateManager : MonoBehaviour {
     private void OnWaveChange() {
         currentWave++;
         txtWave.text = $"Wave {currentWave}";
+    }
+
+    private void OnCoinPickup() {
+        txtCoinCounter.text = PlayerPrefs.GetInt("coins").ToString();
     }
 }

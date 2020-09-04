@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnergyBall : MonoBehaviour {
-    public GameObject gameObject;
+public class FloatAndSpin : MonoBehaviour {
+    // public GameObject gameObject;
     public int serverPositionId;
     public string itemType;
 
@@ -24,7 +24,7 @@ public class EnergyBall : MonoBehaviour {
     }
 
     void Update() {
-        // Spin();
+        Spin();
         gameObject.transform.position = startPosition + moveVector * (moveRange * Mathf.Sin(Time.timeSinceLevelLoad * moveSpeed));
     }
 
