@@ -38,9 +38,19 @@ public class Player : MonoBehaviour {
         gameObject.transform.localScale = startScale;
         GameEvents.current.onGameStart += OnGameStart;
         GameEvents.current.onGameOver += OnGameOver;
+        SetInitialScale();
+    }
+
+    private void SetInitialScale() {
+        int scaleMultiplier = PlayerPrefs.GetInt("si_powerup_initial_scale");
+        float initialScale = 0.25f;
+        float finalScaleFactor = initialScale * scaleMultiplier;
+        Vector3 scale = new Vector3(finalScaleFactor, finalScaleFactor, finalScaleFactor);
+        gameObject.transform.localScale = scale;
     }
 
     private void OnGameStart() {
+        SetInitialScale();
         StartCoroutine("AddScore");
         StartCoroutine("IncreaseScale");
         isGameStarted = true;
