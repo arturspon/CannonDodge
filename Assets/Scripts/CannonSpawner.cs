@@ -24,6 +24,9 @@ public class CannonSpawner : MonoBehaviour {
     
     // HUD
     public Slider waveSlider;
+
+    // Events
+    public static event System.Action OnShoot;
     
     void Start() {
         GameEvents.current.onGameStart += OnGameStart;
@@ -147,6 +150,8 @@ public class CannonSpawner : MonoBehaviour {
         float projectileForce = Random.Range(minProjectileSpeed, maxProjectileSpeed);
 
         projectile.GetComponent<Rigidbody>().AddForce(diff * projectileForce);
+
+        OnShoot?.Invoke();
     }
 
     private IEnumerator HideCannon(GameObject cannon) {
