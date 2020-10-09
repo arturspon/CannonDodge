@@ -9,6 +9,7 @@ public class CannonSpawner : MonoBehaviour {
     public GameObject shootPoint;
     public GameObject cannonPrefab;
     public GameObject player;
+    private GameObject shootTarget;
 
     private float shootForce = 700f;
     private List<GameObject> cannons = new List<GameObject>();
@@ -27,6 +28,7 @@ public class CannonSpawner : MonoBehaviour {
     void Start() {
         GameEvents.current.onGameStart += OnGameStart;
         GameEvents.current.onGameOver += OnGameOver;
+        PowerupManager.OnMagnetPickup += OnMagnetPickup;
         SpawnCannons();
     }
 
@@ -126,6 +128,11 @@ public class CannonSpawner : MonoBehaviour {
 
     private void Shoot(Transform spawnPoint) {
         Vector3 diff = player.transform.position - spawnPoint.position;
+
+        if (shootTarget != null) {
+            diff = shootTarget.transform.position - spawnPoint.position;
+        }
+
         diff.Normalize();
 
         float projectileSize = Random.Range(0.2f, 0.5f);
@@ -136,7 +143,6 @@ public class CannonSpawner : MonoBehaviour {
 
         GameObject projectile = Instantiate(projectilePrefab, projectilePosition, Quaternion.identity) as GameObject;
         projectile.transform.localScale = projectileScale;
-        // projectile.transform.LookAt(player.transform.position);
 
         float projectileForce = Random.Range(minProjectileSpeed, maxProjectileSpeed);
 
@@ -146,5 +152,20 @@ public class CannonSpawner : MonoBehaviour {
     private IEnumerator HideCannon(GameObject cannon) {
         yield return new WaitForSeconds(Random.Range(1f, 2f));   
         cannon.SetActive(false);
+    }
+
+    private void OnMagnetPickup(GameObject magnetGameObject) {
+        // StartCoroutine(ChangeTargetToMagnet(magnetGameObject));
+    }
+
+    private IEnumerator ChangeTargetToMagnet(GameObject magnetGameObject) {
+        int secondsToHold = PlayerPrefs.GetInt("powerup_magnet", 5);
+
+        shootTarget = magnetGameObject;
+
+        yield return new WaitForSeconds(secondsToHold);
+
+        shootTarget = null;
+        Destroy(magnetGameObject);
     }
 }

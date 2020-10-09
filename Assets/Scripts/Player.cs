@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +33,11 @@ public class Player : MonoBehaviour {
 
     // Misc
     private bool isGameStarted = false;
+
+    // =========================================================================
+    // Events
+    // =========================================================================
+    public static event Action<CollectableItem, GameObject> OnItemPickup;
 
     void Start() {
         rb = gameObject.GetComponent<Rigidbody>();
@@ -146,17 +152,14 @@ public class Player : MonoBehaviour {
             scale.z -= 0.1f;
             gameObject.transform.localScale = scale;
 
-            score -= Random.Range(1, 10);
+            score -= UnityEngine.Random.Range(1, 10);
         }
     }
 
     private void OnTriggerEnter(Collider other) {
         if (other.gameObject.tag == "CollectableItem") {
-            // For now, it's always a Coin here
-            Destroy(other.gameObject);
-            int currentCoins = PlayerPrefs.GetInt("coins");
-            PlayerPrefs.SetInt("coins", ++currentCoins);
-            GameEvents.current.PickupCoin();
+            CollectableItem collectableItem = other.gameObject.GetComponent<PowerupStats>().collectableItem;
+            OnItemPickup(collectableItem, other.gameObject);
         }   
     }
 
@@ -175,7 +178,7 @@ public class Player : MonoBehaviour {
 
     private IEnumerator AddScore() {
         while (true) {
-            float timeUntilNextScore = Random.Range(0.2f, 1f);
+            float timeUntilNextScore = UnityEngine.Random.Range(0.2f, 1f);
             score++;
             yield return new WaitForSeconds(timeUntilNextScore);
         }
