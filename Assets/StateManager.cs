@@ -6,6 +6,8 @@ using TMPro;
 
 public class StateManager : MonoBehaviour {
     public GameObject startTextObj;
+    public GameObject shopHolder;
+    public GameObject powerups;
     public TMP_Text txtMaxScore;
     public TMP_Text txtGameOver;
     public TMP_Text txtWave;
@@ -14,6 +16,8 @@ public class StateManager : MonoBehaviour {
     private bool isGameStarted = false;
     private Coroutine startTextBlinkCoroutine;
     int currentWave = 1;
+
+    public Text magnetCounterTxt;
 
     void Start() {
         ToggleMenu(true);
@@ -31,6 +35,8 @@ public class StateManager : MonoBehaviour {
                 GameEvents.current.StartGame();
             }
         }
+
+        magnetCounterTxt.text = PlayerPrefs.GetInt("powerup_magnet_count").ToString();
     }
 
     private IEnumerator BlinkGameObject(GameObject gameObject, float interval) {
@@ -48,6 +54,8 @@ public class StateManager : MonoBehaviour {
 
         startTextObj.gameObject.SetActive(show);
         txtMaxScore.gameObject.SetActive(show);
+        shopHolder.gameObject.SetActive(show);
+        // powerups.gameObject.SetActive(!show);
         txtWave.gameObject.SetActive(!show);
         waveBar.gameObject.SetActive(!show);
 
@@ -61,6 +69,7 @@ public class StateManager : MonoBehaviour {
     private void StartGame() {
         ToggleMenu(false);
         isGameStarted = true;
+        PlayerPrefs.SetInt("powerup_magnet_count", 0);
         GameEvents.current.StartGame();
     }
 
@@ -81,6 +90,12 @@ public class StateManager : MonoBehaviour {
         isGameStarted = false;
         currentWave = 1;
         txtWave.text = $"Wave {currentWave}";
+        DestroyObjects();
+    }
+
+    private void DestroyObjects() {
+        GameObject[] collectableItems = GameObject.FindGameObjectsWithTag("CollectableItem");
+        foreach(GameObject item in collectableItems) GameObject.Destroy(item);
     }
 
     private void OnWaveChange() {
